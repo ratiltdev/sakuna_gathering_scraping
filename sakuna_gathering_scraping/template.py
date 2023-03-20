@@ -34,7 +34,7 @@ def load_item_list(stage: Stage, season: Season) -> list[Item]:
     path = os.path.join(item_directory_path(stage), "items.json")
     file = open(path, "r", encoding="utf-8_sig")
     items: list[Item] = json.load(file, object_hook=decord_item)
-    return list(filter(lambda item: item.season[season.value], items))
+    return list(filter(lambda item: item.season[season.value - 1], items))
 
 
 def decord_item(data: dict) -> Item:
