@@ -133,7 +133,56 @@ def main(stage_id, season_id, count, path):
         setup.reset()
         sys.exit()
 
-    
+@click.command()
+@click.option("--stage_id", prompt="StageID", type=click.IntRange(1, 5), help="1: 地養の洞, 2: 実りのしとね, 3: 清澄滝, 4: 赤井秘湯, 5: 武火の隠し金山")
+@click.option("--season_id", prompt="Season", type=click.IntRange(1, 4), help="1: 春, 2: 夏, 3: 秋, 4: 冬")
+@click.option("--count", prompt="Count", type=click.IntRange(1, 1000), help="測定回数")
+@click.option("--path", prompt="SavePath", type=click.Path(exists=True), help="キャプチャ保存ディレクトリ")
+def re_reconize(stage_id, season_id, count, path):
+    try:
+        stage = Stage(stage_id)
+        season = Season(season_id)
+        
+        template = load_template(stage, season)
+        reconizer = GatheringReconizer(template)
+        
+        item_labels = list(template.items.keys())
+        offset = init_csv(path, item_labels)
+        
+        for i in range(offset, count + offset):
+            image = Image.open(os.path.join(path, f"{i:03}.png"))
+            result = reconizer.reconize(image, dict())
+            
+            # スクロールバーが表示されているなら差分をキャプチャ
+            if reconizer.is_display_scrollbar(image):
+                image = Image.open(os.path.join(path, f"{i:03}(2).png"))
+                result = reconizer.reconize(image, result)
+            
+            write_csv(path, format_result(result, item_labels))
+        
+    except KeyboardInterrupt:
+        sys.exit()
+
+
+@click.command()
+@click.option("--stage_id", prompt="StageID", type=click.IntRange(1, 5), help="1: 地養の洞, 2: 実りのしとね, 3: 清澄滝, 4: 赤井秘湯, 5: 武火の隠し金山")
+@click.option("--season_id", prompt="Season", type=click.IntRange(1, 4), help="1: 春, 2: 夏, 3: 秋, 4: 冬")
+@click.option("--path", prompt="ImagePath", type=click.Path(exists=True), help="キャプチャ画像パス")
+def single_reconize(stage_id, season_id, path):
+    try:
+        stage = Stage(stage_id)
+        season = Season(season_id)
+        
+        template = load_template(stage, season)
+        reconizer = GatheringReconizer(template)
+        
+        image = Image.open(path)
+        result = reconizer.reconize(image, dict())
+        print(result)
+        
+    except KeyboardInterrupt:
+        sys.exit()
+
 if __name__ == "__main__":
-    main()
+    re_reconize()
     
