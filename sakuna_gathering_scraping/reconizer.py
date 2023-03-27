@@ -42,7 +42,7 @@ class GatheringReconizer:
                 name, template = templates[i]
                 # 二値化でマッチング
                 score = match_template_thresh(image, template)
-                if score > 0.85:
+                if score > 0.83:
                     result[name] = match_number(image, self.__template.num_chars)
                     is_match = True
                     offset = i + 1
@@ -99,7 +99,7 @@ def match_number(image: cv2.Mat, templates: list[cv2.Mat]) -> int:
         template = templates[i]
         # 二値化でマッチング
         score = match_template_thresh(image, template)
-        if score > 0.85:
+        if score > 0.8:
             return i
     # matchしない場合は検出のため99扱い
     return 99
