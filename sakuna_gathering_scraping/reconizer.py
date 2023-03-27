@@ -20,11 +20,10 @@ class GatheringReconizer:
         score = match_template_gray(pil2cv(image.crop(box=SCROLL_BBOX)), self.__template.scrollbar)
 
         # 類似度参考
-        # スクロールバー有 最上段 -> 1.0
-        # スクロールバー有 最下段 -> 0.996
-        # スクロールバー無 -> 0.978～0.979
-        # -> 閾値0.99を超えていればスクロールバーが表示されているものとみなす
-        return score > 0.99
+        # スクロールバー有 最上段 -> 0.998
+        # スクロールバー有 最下段 -> 0.887
+        # スクロールバー無 -> 0.05～0.07
+        return score > 0.85
     
     def reconize(self, image: Image.Image, result: dict[str, int]):
         # 採集結果をアイテム行に分割
@@ -43,7 +42,7 @@ class GatheringReconizer:
                 name, template = templates[i]
                 # 二値化でマッチング
                 score = match_template_thresh(image, template)
-                if score > 0.95:
+                if score > 0.85:
                     result[name] = match_number(image, self.__template.num_chars)
                     is_match = True
                     offset = i + 1
@@ -75,7 +74,7 @@ def match_template_gray(image: cv2.Mat, template: cv2.Mat) -> float:
     image_gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     template_gray = cv2.cvtColor(template, cv2.COLOR_RGB2GRAY)
 
-    result = cv2.matchTemplate(image_gray, template_gray, method=cv2.TM_CCORR_NORMED)
+    result = cv2.matchTemplate(image_gray, template_gray, method=cv2.TM_CCOEFF_NORMED)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
 
     return max_val
@@ -87,7 +86,7 @@ def match_template_thresh(image: cv2.Mat, template: cv2.Mat) -> float:
     ret, image_thresh = cv2.threshold(image_gray, 128, 255, cv2.THRESH_OTSU)
     ret, template_thresh = cv2.threshold(template_gray, 128, 255, cv2.THRESH_OTSU)
 
-    result = cv2.matchTemplate(image_thresh, template_thresh, method=cv2.TM_CCORR_NORMED)
+    result = cv2.matchTemplate(image_thresh, template_thresh, method=cv2.TM_CCOEFF_NORMED)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
 
     return max_val
@@ -100,7 +99,7 @@ def match_number(image: cv2.Mat, templates: list[cv2.Mat]) -> int:
         template = templates[i]
         # 二値化でマッチング
         score = match_template_thresh(image, template)
-        if score > 0.94:
+        if score > 0.85:
             return i
     # matchしない場合は検出のため99扱い
     return 99
