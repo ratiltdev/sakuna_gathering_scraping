@@ -11,7 +11,7 @@ ITEM_WIDTH = 530
 ITEM_HEIGHT = 66
 
 
-class GatheringReconizer:
+class GatheringRecognizer:
     def __init__(self, template: Template) -> None:
         self.__template = template
 
@@ -25,7 +25,7 @@ class GatheringReconizer:
         # スクロールバー無 -> 0.05～0.07
         return score > 0.85
     
-    def reconize(self, image: Image.Image, result: dict[str, int]):
+    def recognize(self, image: Image.Image, result: dict[str, int]):
         # 採集結果をアイテム行に分割
         images = []
         for i in range(MAX_DISPLAY):

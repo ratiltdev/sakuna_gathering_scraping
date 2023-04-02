@@ -7,7 +7,7 @@ import time
 import setup
 
 from params import *
-from reconizer import *
+from recognizer import *
 from template import *
 from window import *
 
@@ -97,7 +97,7 @@ def format_result(result: dict[str, int], item_labels: list[str]) -> list:
 @click.command()
 @click.option("--stage_id", prompt="StageID", type=click.IntRange(1, 5), help="1: 地養の洞, 2: 実りのしとね, 3: 清澄滝, 4: 赤井秘湯, 5: 武火の隠し金山")
 @click.option("--season_id", prompt="Season", type=click.IntRange(1, 4), help="1: 春, 2: 夏, 3: 秋, 4: 冬")
-@click.option("--count", prompt="Count", type=click.IntRange(1, 1000), help="測定回数")
+@click.option("--count", prompt="Count", type=click.IntRange(1, 2000), help="測定回数")
 @click.option("--path", prompt="SavePath", type=click.Path(exists=True), help="キャプチャ保存ディレクトリ")
 def main(stage_id, season_id, count, path):
     try:
@@ -106,7 +106,7 @@ def main(stage_id, season_id, count, path):
         
         window = get_window()
         template = load_template(stage, season)
-        reconizer = GatheringReconizer(template)
+        recognizer = GatheringRecognizer(template)
         
         item_labels = list(template.items.keys())
         offset = init_csv(path, item_labels)
@@ -117,14 +117,14 @@ def main(stage_id, season_id, count, path):
             
             image = window.capture(RESULT_BBOX)
             image.save(os.path.join(path, f"{i:03}.png"))
-            result = reconizer.reconize(image, dict())
+            result = recognizer.reconize(image, dict())
             
             # スクロールバーが表示されているなら差分をキャプチャ
-            if reconizer.is_display_scrollbar(image):
+            if recognizer.is_display_scrollbar(image):
                 setup.scroll()
                 image = window.capture(RESULT_BBOX)
                 image.save(os.path.join(path, f"{i:03}(2).png"))
-                result = reconizer.reconize(image, result)
+                result = recognizer.reconize(image, result)
             
             write_csv(path, format_result(result, item_labels))
             setup.close()
@@ -144,7 +144,7 @@ def re_reconize(stage_id, season_id, count, path):
         season = Season(season_id)
         
         template = load_template(stage, season)
-        reconizer = GatheringReconizer(template)
+        reconizer = GatheringRecognizer(template)
         
         item_labels = list(template.items.keys())
         offset = init_csv(path, item_labels)
@@ -174,7 +174,7 @@ def single_reconize(stage_id, season_id, path):
         season = Season(season_id)
         
         template = load_template(stage, season)
-        reconizer = GatheringReconizer(template)
+        reconizer = GatheringRecognizer(template)
         
         image = Image.open(path)
         result = reconizer.reconize(image, dict())
@@ -184,5 +184,5 @@ def single_reconize(stage_id, season_id, path):
         sys.exit()
 
 if __name__ == "__main__":
-    re_reconize()
+    main()
     
